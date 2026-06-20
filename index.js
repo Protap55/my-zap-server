@@ -24,13 +24,16 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-
     const db = client.db("zap_shift_db");
     const parcelCollection = db.collection("percels");
 
     // parcel API
+
+    //Post
     app.post("/parcels", async (req, res) => {
       const parcel = req.body;
+      // parcel created time
+      parcel.createdAt = new Date();
       const result = await parcelCollection.insertOne(parcel);
       res.send(result);
     });
