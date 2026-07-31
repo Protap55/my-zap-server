@@ -76,15 +76,13 @@ async function run() {
       const session = await stripe.checkout.sessions.create({
         line_items: [
           {
-            // Provide the exact Price ID (for example, price_1234) of the product you want to sell
             price_data: {
-              currency: "USD",
+              currency: "bdt",
               unit_amount: amount,
               product_data: {
                 name: paymentInfo.parcelName,
               },
             },
-
             quantity: 1,
           },
         ],
@@ -93,12 +91,17 @@ async function run() {
         metadata: {
           parcelId: paymentInfo.parcelId,
         },
-        success_url: `${process.env.SITE_DOMAIN}/dashboard/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${process.env.SITE_DOMAIN}/dashboard/payment-success`,
         cancel_url: `${process.env.SITE_DOMAIN}/dashboard/payment-cancelled`,
       });
-
-      console.log(session);
       res.send({ url: session.url });
+    });
+
+    // data update
+    app.patch("/payment-success", async (req, res) => {
+      const sessionId = req.query.session_id;
+      console.log("patch", sessionId);
+      res.send({ success: true });
     });
 
     // Send a ping to confirm a successful connection
