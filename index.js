@@ -79,7 +79,7 @@ async function run() {
       res.send(result);
     });
 
-    // payment related apis
+    // payment related apis (stripe)
     app.post("/create-checkout-payment-session", async (req, res) => {
       const parcelInfo = req.body;
       const amount = parseInt(parcelInfo.cost) * 100;
@@ -109,7 +109,7 @@ async function run() {
       res.send({ url: session.url });
     });
 
-    // data update
+    //Payment stripe data update
     app.patch("/payment-success", async (req, res) => {
       const sessionId = req.query.session_id;
       console.log("Session ID:", sessionId);
@@ -124,6 +124,7 @@ async function run() {
         return res.send({
           message: "Already Exit",
           transactionId,
+          trackingId: paymentExit.trackingId,
         });
       }
 
@@ -146,7 +147,7 @@ async function run() {
           currency: session.currency,
           customerEmail: session.customer_email,
           parcelId: session.metadata.parcelId,
-          parceName: session.metadata.parceName,
+          parcelName: session.metadata.parcelName,
           transactionId: session.payment_intent,
           paymentStatus: session.payment_status,
           paidAt: new Date(),
@@ -167,6 +168,21 @@ async function run() {
       res.send({
         success: true,
       });
+    });
+
+    // payment histry
+    app.get("/payments", async (req, res) => {
+      const query = {};
+
+      const { email } = req.query;
+
+      if (email) {
+        query.customerEmail = email;
+      }
+      const cursor = paymentCollection.find(query);
+      const result = await cursor.toArray();
+
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
